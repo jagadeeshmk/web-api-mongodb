@@ -6,7 +6,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
+using StudentManagement.Models;
+using StudentManagement.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +30,10 @@ namespace StudentManagement
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<StudentStoreDatabaseSettings>(Configuration.GetSection(nameof(StudentStoreDatabaseSettings)));
+            services.AddSingleton<IStudentStoreDatabaseSettings>(sp => sp.GetRequiredService<IOptions<StudentStoreDatabaseSettings>>().Value);
+            services.AddSingleton<IMongoClient>(sp => new MongoClient(Configuration.GetValue<string>("StudentStoreDatabseSettings:ConnectionString")));
+            services.AddScoped<IStudentService, StudentService>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
